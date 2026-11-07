@@ -542,6 +542,15 @@
             justify-content: space-between;
             color: var(--text-dim);
         }
+        .data-warning {
+            border: 1px solid #d2992266;
+            background: rgba(210, 153, 34, 0.08);
+            color: var(--yellow);
+            padding: 6px 12px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
         .status-text b { color: var(--text); }
         .status-text .g { color: var(--green); font-weight: 700; }
         .status-text .r { color: var(--red); font-weight: 700; }
@@ -613,6 +622,9 @@
         .rar-tag.rare, .rar-tag.special, .rar-tag.ice, .rar-tag.diamond { color: var(--blue); border-color: #58a6ff55; }
         .rar-tag.uncommon, .rar-tag.turbo, .rar-tag.collection, .rar-tag.forest { color: var(--green); border-color: #3fb95055; }
         .rar-tag.common, .rar-tag.regular { color: var(--text-dim); border-color: #7d859055; }
+        .rar-tag.mythic { color: #f178d8; border-color: #f178d855; }
+        .rar-tag.fossil { color: var(--yellow); border-color: #d2992255; }
+        .rar-tag.safari { color: var(--green); border-color: #3fb95055; }
 
         .shard-name { font-weight: 700; }
         .shard-name.legendary, .shard-name.ultimate, .shard-name.slayer, .shard-name.wither { color: var(--orange); }
@@ -620,6 +632,9 @@
         .shard-name.rare, .shard-name.special, .shard-name.ice, .shard-name.diamond { color: var(--blue); }
         .shard-name.uncommon, .shard-name.turbo, .shard-name.collection, .shard-name.forest { color: var(--green); }
         .shard-name.common, .shard-name.regular { color: #cbd5e1; }
+        .shard-name.mythic { color: #f178d8; }
+        .shard-name.fossil { color: var(--yellow); }
+        .shard-name.safari { color: var(--green); }
 
         .vol-stat { margin-left: auto; font-size: 10.5px; color: var(--text-dim); font-weight: 400; }
 
@@ -854,6 +869,7 @@
         <div class="sidebar-foot">
             <div>HYPIXEL BAZAAR</div>
             <div id="sb-time">--:--:--</div>
+            <div id="sb-data">RECIPES SYNCED: --</div>
         </div>
     </aside>
 
@@ -1033,6 +1049,7 @@
                 <span class="ctrl-lbl">Rarity:</span>
                 <div class="btn-group">
                     <button class="btn active" onclick="setFilterCategory('all', this)">All</button>
+                    <button class="btn" onclick="setFilterCategory('mythic', this)">Mythic</button>
                     <button class="btn" onclick="setFilterCategory('legendary', this)">Leg</button>
                     <button class="btn" onclick="setFilterCategory('epic', this)">Epic</button>
                     <button class="btn" onclick="setFilterCategory('rare', this)">Rare</button>
@@ -1042,13 +1059,14 @@
 
             <div class="ctrl-group" id="filter-group-essence" style="display:none">
                 <span class="ctrl-lbl">Essence:</span>
-                <div class="btn-group">
+                <div class="btn-group" id="essence-filter-btns">
                     <button class="btn active" onclick="setFilterCategory('all', this)">All</button>
-                    <button class="btn" onclick="setFilterCategory('wither', this)">Wither</button>
-                    <button class="btn" onclick="setFilterCategory('undead', this)">Undead</button>
-                    <button class="btn" onclick="setFilterCategory('ice', this)">Ice</button>
-                    <button class="btn" onclick="setFilterCategory('diamond', this)">Diamond</button>
                 </div>
+            </div>
+
+            <div class="ctrl-group" title="Bazaar tax on what you sell. 1.25% by default, 1.125% with the free Bazaar Flipper upgrade from the Community Shop.">
+                <span class="ctrl-lbl">Tax %:</span>
+                <input type="number" id="tax-pct" class="qty-input" style="width:85px" min="0" max="100" step="0.025" value="1.125" oninput="setBazaarTax(this.value)" />
             </div>
 
             <div class="ctrl-group">
@@ -1071,6 +1089,7 @@
             <div class="status-text" id="stext">Initializing data...</div>
             <div id="sts">--:--:--</div>
         </div>
+        <div id="data-warning" class="data-warning" style="display:none"></div>
 
         <!-- Results Grid -->
         <div id="area">
@@ -1085,6 +1104,10 @@
         let fusionData = null;
         let enchantsData = null;
         let craftRecipesData = null;
+        let essenceRecipes = {};
+        let itemNames = {};
+        let slayerXp = {};
+        let dataManifest = null;
         let productsData = {};
         let shardPrices = {};
         let bookPrices = {};
@@ -1108,7 +1131,8 @@
         let activeMemberData = null;
         let unlockedOnlyFilter = true;
 
-        const BAZAAR_TAX = 0.01125;
+        let BAZAAR_TAX = 0.01125;
+        const DATA_STALE_HOURS = 48;
 
         // Specific Skyblock Enchantment Exceptions
         const EXPLICIT_LIMITS = {
@@ -1163,40 +1187,6 @@
             "CONDENSED_FERMENTO": 128,
             "CRAFTERS_ARMOR": 128,
             "DEFAULT": 71680
-        };
-
-        // Essence Shop Conversions
-        const ESSENCE_RECIPES = {
-            'INFINITE_SPIRIT_LEAP': {
-                name: 'Infinileap',
-                category: 'wither',
-                shop: 'Wither Essence Shop',
-                materials: { 'ESSENCE_WITHER': 25000 }
-            },
-            'INFINITE_SUPERBOOM_TNT': {
-                name: 'Infinityboom TNT',
-                category: 'undead',
-                shop: 'Undead Essence Shop',
-                materials: { 'ESSENCE_UNDEAD': 50000 }
-            },
-            'ENCHANTMENT_EXPERIENCE_5': {
-                name: 'Experience V Book',
-                category: 'ice',
-                shop: 'Ice Essence Shop',
-                materials: { 'ESSENCE_ICE': 15000 }
-            },
-            'PERFECTLY_CUT_DIAMOND': {
-                name: 'Perfectly Cut Diamond',
-                category: 'diamond',
-                shop: 'Diamond Essence Shop',
-                materials: { 'ESSENCE_DIAMOND': 1000, 'REFINED_DIAMOND': 2 }
-            },
-            'WOODEN_BAIT': {
-                name: 'Wooden Bait',
-                category: 'forest',
-                shop: 'Forest Essence Shop',
-                materials: { 'ESSENCE_FOREST': 100 }
-            }
         };
 
         const cfg = {
@@ -1307,9 +1297,7 @@
             // Reset filter buttons
             document.querySelectorAll('.ctrl-group .btn').forEach(btn => {
                 if (btn.textContent === 'All') btn.classList.add('active');
-                else if (['Leg', 'Epic', 'Rare', 'Ultimate', 'Turbo', 'Regular', 'Uncommon', 'Wither', 'Undead', 'Ice', 'Diamond'].includes(btn.textContent)) {
-                    btn.classList.remove('active');
-                }
+                else if (btn.closest('[id^="filter-group-"]')) btn.classList.remove('active');
             });
 
             const bannerIcon = document.getElementById('banner-icon');
@@ -1371,11 +1359,12 @@
             const nc = craftRecipesData ? Object.keys(craftRecipesData).length : 1852;
             const profStr = activeMemberData ? `Profile: <b>${getActiveProfileCuteName()}</b>` : `Database: <b>${nc} Recipes</b>`;
             document.getElementById('stat-meta1').innerHTML = profStr;
-            document.getElementById('stat-meta2').innerHTML = activeMemberData ? `Unlocks: <b>Filter Active</b>` : `Type: <b>Items Folder JSONs</b>`;
+            document.getElementById('stat-meta2').innerHTML = activeMemberData ? `Unlocks: <b>Filter Active</b>` : `Type: <b>Synced Recipes</b>`;
         }
 
         function updateEssenceStats() {
-            document.getElementById('stat-meta1').innerHTML = `Shops: <b>${Object.keys(ESSENCE_RECIPES).length}</b>`;
+            const shops = new Set(Object.values(essenceRecipes).map(r => r.shop));
+            document.getElementById('stat-meta1').innerHTML = `Shops: <b>${shops.size}</b>`;
             document.getElementById('stat-meta2').innerHTML = `Type: <b>Essence Arbitrage</b>`;
         }
 
@@ -1385,21 +1374,37 @@
             const userInput = document.getElementById('craft-username');
             if (userInput && storedUser) userInput.value = storedUser;
 
+            const storedTax = localStorage.getItem('bazaar_tax_pct');
+            if (storedTax !== null) {
+                document.getElementById('tax-pct').value = storedTax;
+                BAZAAR_TAX = parseFloat(storedTax) / 100;
+            }
+
             setStatus('Loading fusion-data.json, enchants.json, and craft-recipes.json...');
             try {
-                const [fResp, eResp, cResp] = await Promise.all([
+                const [fResp, eResp, cResp, gResp, mResp] = await Promise.all([
                     fetch('./fusion-data.json'),
                     fetch('./enchants.json'),
-                    fetch('./craft-recipes.json')
+                    fetch('./craft-recipes.json'),
+                    fetch('./game-data.json'),
+                    fetch('./data-manifest.json')
                 ]);
 
                 if (!fResp.ok) throw new Error('Could not load fusion-data.json');
                 fusionData = await fResp.json();
-                
+
                 if (eResp.ok) enchantsData = await eResp.json();
                 if (cResp.ok) craftRecipesData = await cResp.json();
+                if (gResp.ok) {
+                    const gameData = await gResp.json();
+                    essenceRecipes = gameData.essenceRecipes;
+                    itemNames = gameData.itemNames;
+                    slayerXp = gameData.slayerXp;
+                }
+                if (mResp.ok) dataManifest = await mResp.json();
 
                 updateShardStats();
+                updateDataStatus();
                 applyPreset('insta');
                 setBatchQty(10);
 
@@ -1612,11 +1617,7 @@
         }
 
         function getSlayerLevelFromXp(type, xp) {
-            const reqs = [0, 5, 15, 200, 1000, 5000, 20000, 100000, 400000, 1000000];
-            for (let lvl = reqs.length - 1; lvl >= 1; lvl--) {
-                if (xp >= reqs[lvl]) return lvl;
-            }
-            return 0;
+            return (slayerXp[type] || []).filter(needed => xp >= needed).length;
         }
 
         async function refreshPrices() {
@@ -1644,10 +1645,51 @@
                 renderCurrentModule();
                 setStatus(statusText());
                 updateTs();
+                updateDataStatus();
                 triggerStarPopupIfNeeded();
             } catch (e) {
                 setStatus(`<span class="r">ERROR: Bazaar fetch failed (${esc(e.message)})</span>`);
             }
+        }
+
+        /* ─── Data Freshness ──────────────────────────────────────── */
+        function formatDataAge(ms) {
+            const hours = ms / 3600000;
+            if (hours < 1) return 'under 1h ago';
+            if (hours < 48) return `${Math.floor(hours)}h ago`;
+            return `${Math.floor(hours / 24)}d ago`;
+        }
+
+        // Recipes come from community projects, so say so when they might be behind the game.
+        function updateDataStatus() {
+            const warnings = [];
+            const label = document.getElementById('sb-data');
+
+            if (dataManifest?.syncedAt) {
+                const syncedAt = new Date(dataManifest.syncedAt);
+                const age = Date.now() - syncedAt.getTime();
+                label.textContent = `RECIPES SYNCED ${formatDataAge(age)}`;
+                label.title = `Synced ${syncedAt.toLocaleString()} for SkyBlock ${dataManifest.gameVersion}`;
+                if (age > DATA_STALE_HOURS * 3600000) {
+                    warnings.push(`Recipe and fusion data last synced ${formatDataAge(age)}, so automatic updates may have stopped. Check recipes in-game before buying.`);
+                }
+            } else {
+                label.textContent = 'RECIPES SYNCED: UNKNOWN';
+                warnings.push("Couldn't check when recipe and fusion data last synced. Check recipes in-game before buying.");
+            }
+
+            if (fusionData) {
+                const known = new Set(Object.values(fusionData.shards).map(s => s.internal_id));
+                const unknown = Object.keys(productsData).filter(id => id.startsWith('SHARD_') && !known.has(id));
+                if (unknown.length) {
+                    const names = unknown.map(id => cleanItemName(id.replace('SHARD_', ''))).join(', ');
+                    warnings.push(`${unknown.length === 1 ? 'A shard' : `${unknown.length} shards`} on the Bazaar ${unknown.length === 1 ? 'has' : 'have'} no fusion data yet, so flips using ${unknown.length === 1 ? 'it are' : 'them are'} missing: ${names}.`);
+                }
+            }
+
+            const el = document.getElementById('data-warning');
+            el.innerHTML = warnings.map(w => `<div>[!] ${esc(w)}</div>`).join('');
+            el.style.display = warnings.length ? 'block' : 'none';
         }
 
         /* ─── Price Builders ──────────────────────────────────────── */
@@ -2220,6 +2262,7 @@
         }
 
         function cleanItemName(productId) {
+            if (itemNames[productId]) return itemNames[productId];
             const customNames = {
                 "BOOSTER_COOKIE": "Booster Cookie",
                 "RECOMBOBULATOR_3000": "Recombobulator 3000",
@@ -2964,7 +3007,7 @@
             };
         }
 
-        /* ─── Craft Flipper (Loaded directly from items/ folder recipes) ── */
+        /* ─── Craft Flipper (craft-recipes.json, see scripts/sync-data.mjs) ── */
         function computeCraftFlips() {
             if (!Object.keys(productsData).length || !craftRecipesData) return;
             const userTargetQty = Math.max(1, parseInt(cfg.batchQty, 10) || 1);
@@ -3099,13 +3142,21 @@
             const isInstaBuy = (cfg.inputMode === 'instabuy');
             const isInstaSell = (cfg.outputMode === 'instasell');
             const out = [];
+            const categories = new Set();
 
-            for (const [itemId, meta] of Object.entries(ESSENCE_RECIPES)) {
+            for (const [itemId, meta] of Object.entries(essenceRecipes)) {
                 const prod = productsData[itemId];
                 if (!prod) continue;
 
-                const pOut = parseOrderBook(prod);
                 const mats = meta.materials;
+                // A material with no Bazaar price would count as free and fake the profit
+                if (!Object.keys(mats).every(m => productsData[m])) continue;
+                categories.add(meta.category);
+
+                const pOut = parseOrderBook(prod);
+                const outputPerPurchase = meta.count || 1;
+                const totalPurchases = Math.ceil(userTargetQty / outputPerPurchase);
+                const actualProducedUnits = totalPurchases * outputPerPurchase;
 
                 let totalMatCost = 0.0;
                 let maxExecutable = Infinity;
@@ -3113,10 +3164,8 @@
 
                 for (const [matId, qtyPerCraft] of Object.entries(mats)) {
                     const matProd = productsData[matId];
-                    if (!matProd) continue;
-
                     const pMat = parseOrderBook(matProd);
-                    const totalNeeded = qtyPerCraft * userTargetQty;
+                    const totalNeeded = qtyPerCraft * totalPurchases;
 
                     let unitPrice = pMat.sell_offer_p;
                     if (isInstaBuy) {
@@ -3142,7 +3191,7 @@
 
                 let salePrice = pOut.sell_offer_p;
                 if (isInstaSell) {
-                    const sellRes = calculateWeightedInstaSell(pOut.sell_summary, userTargetQty);
+                    const sellRes = calculateWeightedInstaSell(pOut.sell_summary, actualProducedUnits);
                     if (sellRes.filledQty > 0) salePrice = sellRes.avgPrice;
                     if (pOut.total_sell_avail < maxExecutable) maxExecutable = pOut.total_sell_avail;
                 } else {
@@ -3151,17 +3200,17 @@
 
                 if (maxExecutable === Infinity) maxExecutable = 999;
 
-                const totalGrossRev = salePrice * userTargetQty;
+                const totalGrossRev = salePrice * actualProducedUnits;
                 const totalTax = totalGrossRev * BAZAAR_TAX;
                 const totalNetRev = totalGrossRev - totalTax;
                 const totalProfit = totalNetRev - totalMatCost;
 
                 if (totalProfit > 0) {
-                    const unitCost = totalMatCost / userTargetQty;
-                    const unitProfit = totalProfit / userTargetQty;
+                    const unitCost = totalMatCost / actualProducedUnits;
+                    const unitProfit = totalProfit / actualProducedUnits;
                     const roiPct = totalMatCost > 0 ? (totalProfit / totalMatCost * 100) : 0;
 
-                    const durations = calculateGenericDurations(matBreakdown, prod, userTargetQty);
+                    const durations = calculateGenericDurations(matBreakdown, prod, actualProducedUnits);
 
                     // Max Total Time Filter
                     if (cfg.maxTotalTime !== null && durations.totalHours > cfg.maxTotalTime) {
@@ -3182,14 +3231,16 @@
                         salePrice,
                         unitProfit,
                         pct: roiPct,
-                        actualProducedUnits: userTargetQty,
+                        actualProducedUnits,
                         maxExecutable,
-                        isOrderBookFullyAvailable: (maxExecutable >= userTargetQty),
+                        isOrderBookFullyAvailable: (maxExecutable >= actualProducedUnits),
                         volume: pOut.volume,
                         durations
                     });
                 }
             }
+
+            renderEssenceFilters(categories);
 
             if (cfg.sortBy === 'percent') {
                 out.sort((a, b) => b.pct - a.pct);
@@ -3201,6 +3252,19 @@
 
             allEssenceResults = out;
             document.getElementById('sb-badge-essence').textContent = allEssenceResults.length;
+        }
+
+        // One button per essence type that currently has something sellable on the Bazaar
+        function renderEssenceFilters(categories) {
+            const group = document.getElementById('essence-filter-btns');
+            group.innerHTML = '';
+            for (const category of ['all', ...[...categories].sort()]) {
+                const btn = document.createElement('button');
+                btn.className = 'btn' + (activeFilterCategory === category ? ' active' : '');
+                btn.textContent = category === 'all' ? 'All' : category.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                btn.onclick = () => setFilterCategory(category, btn);
+                group.appendChild(btn);
+            }
         }
 
         /* ─── Rendering Dispatcher ────────────────────────────────── */
@@ -3526,9 +3590,11 @@
             let reqBadgeStr = '';
             if (r.requirement) {
                 if (r.requirement.type === 'collection') {
-                    reqBadgeStr = ` | 📜 Req: ${r.requirement.collection_name} ${r.requirement.tier}`;
+                    reqBadgeStr = ` | 📜 Req: ${esc(r.requirement.collection_name)} ${r.requirement.tier}`;
                 } else if (r.requirement.type === 'slayer') {
-                    reqBadgeStr = ` | ⚔️ Req: ${r.requirement.name}`;
+                    reqBadgeStr = ` | ⚔️ Req: ${esc(r.requirement.name)}`;
+                } else {
+                    reqBadgeStr = ` | 📜 Req: ${esc(r.requirement.name)}`;
                 }
             }
 
@@ -3559,7 +3625,7 @@
                 </div>
 
                 <div class="mats-list">
-                    <span style="color:var(--text-dim);font-weight:700;display:block;margin-bottom:2px">[VERIFIED RECIPE INGREDIENTS]:</span>
+                    <span style="color:var(--text-dim);font-weight:700;display:block;margin-bottom:2px">[RECIPE INGREDIENTS]:</span>
                     ${matListStr}
                 </div>
 
@@ -3604,7 +3670,7 @@
                 <div class="card-header">
                     <span class="rank-num">#${rank}</span>
                     <span class="mod-icon">🔮</span>
-                    <span class="rar-tag ${cat}">${cat.toUpperCase()} ESSENCE</span>
+                    <span class="rar-tag ${cat}">${cat.replace(/_/g, ' ').toUpperCase()} ESSENCE</span>
                     <span class="shard-name ${cat}">${esc(r.name)}</span>
                     <span class="vol-stat">vol: ${fmt(r.volume)}/wk</span>
                 </div>
@@ -3663,7 +3729,7 @@
         }
 
         function esc(s) {
-            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function setStatus(html) {
@@ -3740,6 +3806,14 @@
         function setOutputMode(mode) {
             cfg.outputMode = mode;
             updateToggles();
+            recompute();
+        }
+
+        function setBazaarTax(pct) {
+            const value = parseFloat(pct);
+            if (!(value >= 0 && value <= 100)) return;
+            BAZAAR_TAX = value / 100;
+            localStorage.setItem('bazaar_tax_pct', String(value));
             recompute();
         }
 
