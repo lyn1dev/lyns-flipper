@@ -22,8 +22,8 @@ open `http://localhost:8000` in your browser.
 
 ## api key
 
-you need a free hypixel api key from https://developer.hypixel.net.
-when you first open the site it asks for it once, saves it in your browser localstorage (not shared anywhere), and leaves you alone.
+bazaar prices work without a key. you only need a free hypixel api key from https://developer.hypixel.net to look up player profiles in the craft flipper.
+the first time you do a lookup it asks for the key once, saves it in your browser localstorage (not shared anywhere), and leaves you alone. you can add or change it any time with the `🔑 API KEY` button.
 
 ## star this thing
 
