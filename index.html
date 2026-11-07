@@ -265,6 +265,20 @@
             white-space: nowrap;
         }
         .modal-btn:hover { background: #388bfd; }
+        .modal-btn-secondary {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            background: transparent;
+            border: 1px solid var(--border-bright);
+            color: var(--text-dim);
+            font-family: var(--mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 7px 14px;
+            cursor: pointer;
+        }
+        .modal-btn-secondary:hover { color: #fff; border-color: var(--text-dim); }
         .modal-err {
             color: var(--red);
             font-size: 11px;
@@ -845,12 +859,12 @@
 
     <!-- Main Content Area -->
     <div class="main-wrapper">
-        <!-- Startup Modal for API Key -->
+        <!-- Modal for API Key (only needed for player profile lookups) -->
         <div id="api-key-modal" class="modal-overlay" style="display:none">
             <div class="modal-box">
-                <div class="modal-title">[ HYPIXEL API KEY REQUIRED ]</div>
+                <div class="modal-title">[ HYPIXEL API KEY ]</div>
                 <p class="modal-text">
-                    you need a hypixel API key to use this site, you can get one for free at 
+                    you need a hypixel API key to look up player profiles, you can get one for free at
                     <a href="https://developer.hypixel.net" target="_blank" class="modal-link">https://developer.hypixel.net</a>,
                     copy paste the key in the box below:
                     <span class="modal-privacy">the api key is saved in your local browsers storage. it is not shared.</span>
@@ -861,6 +875,7 @@
                     <button class="modal-btn" onclick="saveApiKey()">[ SAVE & CONTINUE ]</button>
                 </div>
                 <div id="modal-err" class="modal-err"></div>
+                <button class="modal-btn-secondary" onclick="closeApiKeyModal()">[ CANCEL ]</button>
             </div>
         </div>
 
@@ -1229,7 +1244,10 @@
 
             localStorage.setItem('hypixel_api_key', key);
             closeApiKeyModal();
-            refreshPrices();
+            // Carry on with the lookup that asked for the key
+            if (document.getElementById('craft-username').value.trim()) {
+                loadPlayerProfiles();
+            }
         }
 
         function triggerStarPopupIfNeeded() {
@@ -1362,11 +1380,6 @@
         }
 
         async function init() {
-            const currentKey = getApiKey();
-            if (!currentKey) {
-                openApiKeyModal();
-            }
-
             // Restore stored username if any
             const storedUser = localStorage.getItem('craft_username') || '';
             const userInput = document.getElementById('craft-username');
@@ -1390,16 +1403,12 @@
                 applyPreset('insta');
                 setBatchQty(10);
 
-                if (storedUser) {
+                if (storedUser && getApiKey()) {
                     loadPlayerProfiles(false);
                 }
 
-                if (getApiKey()) {
-                    setStatus(`Loaded static databases · Fetching live Bazaar order books...`);
-                    await refreshPrices();
-                } else {
-                    setStatus(`<span class="r">Awaiting Hypixel API Key from startup modal...</span>`);
-                }
+                setStatus(`Loaded static databases · Fetching live Bazaar order books...`);
+                await refreshPrices();
             } catch (e) {
                 setStatus(`<span class="r">ERROR: Could not load data files (${esc(e.message)})</span>`);
                 document.getElementById('area').innerHTML = `<div style="padding:30px;color:var(--red);border:1px solid var(--border)">
@@ -1461,6 +1470,10 @@
                 });
 
                 if (!profResp.ok) {
+                    // Stay quiet on the automatic lookup at page load, only prompt when the user asked
+                    if ((profResp.status === 403 || profResp.status === 401) && showStatusAlert) {
+                        openApiKeyModal('Invalid or expired Hypixel API key. Please check your key from https://developer.hypixel.net');
+                    }
                     throw new Error(`Hypixel Profiles API HTTP ${profResp.status}`);
                 }
 
@@ -1607,24 +1620,11 @@
         }
 
         async function refreshPrices() {
-            const apiKey = getApiKey();
-            if (!apiKey) {
-                openApiKeyModal();
-                return;
-            }
-
             setStatus('Fetching live Bazaar order books and market volume...');
             try {
-                const headers = {};
-                if (apiKey) {
-                    headers['API-Key'] = apiKey;
-                }
-                const resp = await fetch('https://api.hypixel.net/v2/skyblock/bazaar', { headers });
+                // The Bazaar endpoint is public, it doesn't need an API key
+                const resp = await fetch('https://api.hypixel.net/v2/skyblock/bazaar');
                 if (!resp.ok) {
-                    if (resp.status === 403 || resp.status === 401) {
-                        openApiKeyModal('Invalid or expired Hypixel API key. Please check your key from https://developer.hypixel.net');
-                        throw new Error('Invalid API Key (HTTP ' + resp.status + ')');
-                    }
                     throw new Error('Bazaar API: HTTP ' + resp.status);
                 }
                 const data = await resp.json();
