@@ -1476,7 +1476,7 @@
   },
   "BEASTMASTER_CREST_EPIC": {
     "item_id": "BEASTMASTER_CREST_EPIC",
-    "name": "Beastmaster Crest",
+    "name": "Venerable Beastmaster Crest",
     "count": 1,
     "tier": "EPIC",
     "materials": {
@@ -1488,7 +1488,7 @@
   },
   "BEASTMASTER_CREST_LEGENDARY": {
     "item_id": "BEASTMASTER_CREST_LEGENDARY",
-    "name": "Beastmaster Crest",
+    "name": "Exalted Beastmaster Crest",
     "count": 1,
     "tier": "LEGENDARY",
     "materials": {
@@ -1500,7 +1500,7 @@
   },
   "BEASTMASTER_CREST_RARE": {
     "item_id": "BEASTMASTER_CREST_RARE",
-    "name": "Beastmaster Crest",
+    "name": "Stalwart Beastmaster Crest",
     "count": 1,
     "tier": "RARE",
     "materials": {
@@ -1512,7 +1512,7 @@
   },
   "BEASTMASTER_CREST_UNCOMMON": {
     "item_id": "BEASTMASTER_CREST_UNCOMMON",
-    "name": "Beastmaster Crest",
+    "name": "Blessed Beastmaster Crest",
     "count": 1,
     "tier": "UNCOMMON",
     "materials": {
@@ -7647,7 +7647,7 @@
   },
   "DULL_SHARK_TOOTH_NECKLACE": {
     "item_id": "DULL_SHARK_TOOTH_NECKLACE",
-    "name": "Dull Shark Tooth Necklace",
+    "name": "Shark Tooth Ring",
     "count": 1,
     "tier": "UNCOMMON",
     "materials": {
@@ -10135,9 +10135,9 @@
       "type": "collection",
       "collection_id": "SPIDER_EYE",
       "collection_name": "Spider Eye",
-      "tier": 4,
-      "tier_code": "SPIDER_EYE_4",
-      "amount_required": 1000
+      "tier": 3,
+      "tier_code": "SPIDER_EYE_3",
+      "amount_required": 250
     }
   },
   "ENCHANTED_SPONGE": {
@@ -16348,7 +16348,7 @@
   },
   "HONED_SHARK_TOOTH_NECKLACE": {
     "item_id": "HONED_SHARK_TOOTH_NECKLACE",
-    "name": "Honed Shark Tooth Necklace",
+    "name": "Shark Tooth Artifact",
     "count": 1,
     "tier": "RARE",
     "materials": {
@@ -19370,11 +19370,10 @@
   "LEASH": {
     "item_id": "LEASH",
     "name": "Lead",
-    "count": 1,
+    "count": 2,
     "tier": "COMMON",
     "materials": {
-      "STRING": 4,
-      "SLIME_BALL": 1
+      "STRING": 5
     },
     "requirement": null
   },
@@ -24154,76 +24153,106 @@
       "amount_required": 15000
     }
   },
-  "PERSONAL_COMPACTOR_4000": {
-    "item_id": "PERSONAL_COMPACTOR_4000",
-    "name": "Personal Compactor 4000",
+  "PERSONAL_COMPACTOR_COMBAT_4000": {
+    "item_id": "PERSONAL_COMPACTOR_COMBAT_4000",
+    "name": "Personal Combat Compactor 4000",
     "count": 1,
-    "tier": "UNCOMMON",
+    "tier": "COMMON",
     "materials": {
-      "ENCHANTED_REDSTONE": 28,
-      "SUPER_COMPACTOR_3000": 1
+      "ENCHANTED_SPIDER_EYE": 6
     },
     "requirement": {
       "type": "collection",
-      "collection_id": "REDSTONE",
-      "collection_name": "Redstone Dust",
-      "tier": 6,
-      "tier_code": "REDSTONE_6",
-      "amount_required": 5000
+      "collection_id": "SPIDER_EYE",
+      "collection_name": "Spider Eye",
+      "tier": 4,
+      "tier_code": "SPIDER_EYE_4",
+      "amount_required": 1000
     }
   },
-  "PERSONAL_COMPACTOR_5000": {
-    "item_id": "PERSONAL_COMPACTOR_5000",
-    "name": "Personal Compactor 5000",
+  "PERSONAL_COMPACTOR_FARMING_4000": {
+    "item_id": "PERSONAL_COMPACTOR_FARMING_4000",
+    "name": "Personal Farming Compactor 4000",
     "count": 1,
-    "tier": "RARE",
+    "tier": "COMMON",
     "materials": {
-      "ENCHANTED_REDSTONE": 84,
-      "PERSONAL_COMPACTOR_4000": 1
+      "ENCHANTED_CARROT": 6
     },
     "requirement": {
       "type": "collection",
-      "collection_id": "REDSTONE",
-      "collection_name": "Redstone Dust",
-      "tier": 7,
-      "tier_code": "REDSTONE_7",
-      "amount_required": 25000
+      "collection_id": "CARROT_ITEM",
+      "collection_name": "Carrot",
+      "tier": 4,
+      "tier_code": "CARROT_ITEM_4",
+      "amount_required": 1750
     }
   },
-  "PERSONAL_COMPACTOR_6000": {
-    "item_id": "PERSONAL_COMPACTOR_6000",
-    "name": "Personal Compactor 6000",
+  "PERSONAL_COMPACTOR_FISHING_4000": {
+    "item_id": "PERSONAL_COMPACTOR_FISHING_4000",
+    "name": "Personal Fishing Compactor 4000",
     "count": 1,
-    "tier": "EPIC",
+    "tier": "COMMON",
     "materials": {
-      "ENCHANTED_REDSTONE_BLOCK": 7,
-      "PERSONAL_COMPACTOR_5000": 1
+      "ENCHANTED_CLAY_BALL": 6
     },
     "requirement": {
       "type": "collection",
-      "collection_id": "REDSTONE",
-      "collection_name": "Redstone Dust",
-      "tier": 8,
-      "tier_code": "REDSTONE_8",
-      "amount_required": 100000
+      "collection_id": "CLAY_BALL",
+      "collection_name": "Clay Ball",
+      "tier": 4,
+      "tier_code": "CLAY_BALL_4",
+      "amount_required": 500
     }
   },
-  "PERSONAL_COMPACTOR_7000": {
-    "item_id": "PERSONAL_COMPACTOR_7000",
-    "name": "Personal Compactor 7000",
+  "PERSONAL_COMPACTOR_FORAGING_4000": {
+    "item_id": "PERSONAL_COMPACTOR_FORAGING_4000",
+    "name": "Personal Foraging Compactor 4000",
     "count": 1,
-    "tier": "LEGENDARY",
+    "tier": "COMMON",
     "materials": {
-      "ENCHANTED_REDSTONE_BLOCK": 21,
-      "PERSONAL_COMPACTOR_6000": 1
+      "ENCHANTED_SPRUCE_LOG": 6
+    },
+    "requirement": {
+      "type": "collection",
+      "collection_id": "LOG:1",
+      "collection_name": "Spruce Log",
+      "tier": 4,
+      "tier_code": "LOG:1_4",
+      "amount_required": 500
+    }
+  },
+  "PERSONAL_COMPACTOR_HUSBANDRY_4000": {
+    "item_id": "PERSONAL_COMPACTOR_HUSBANDRY_4000",
+    "name": "Personal Husbandry Compactor 4000",
+    "count": 1,
+    "tier": "COMMON",
+    "materials": {
+      "ENCHANTED_LEATHER": 6
+    },
+    "requirement": {
+      "type": "collection",
+      "collection_id": "LEATHER",
+      "collection_name": "Leather",
+      "tier": 4,
+      "tier_code": "LEATHER_4",
+      "amount_required": 500
+    }
+  },
+  "PERSONAL_COMPACTOR_MINING_4000": {
+    "item_id": "PERSONAL_COMPACTOR_MINING_4000",
+    "name": "Personal Mining Compactor 4000",
+    "count": 1,
+    "tier": "COMMON",
+    "materials": {
+      "ENCHANTED_REDSTONE": 6
     },
     "requirement": {
       "type": "collection",
       "collection_id": "REDSTONE",
       "collection_name": "Redstone Dust",
-      "tier": 9,
-      "tier_code": "REDSTONE_9",
-      "amount_required": 250000
+      "tier": 4,
+      "tier_code": "REDSTONE_4",
+      "amount_required": 1500
     }
   },
   "PERSONAL_DELETOR_4000": {
@@ -26195,7 +26224,7 @@
   },
   "RAGGEDY_SHARK_TOOTH_NECKLACE": {
     "item_id": "RAGGEDY_SHARK_TOOTH_NECKLACE",
-    "name": "Raggedy Shark Tooth Necklace",
+    "name": "Shark Tooth Talisman",
     "count": 1,
     "tier": "COMMON",
     "materials": {
@@ -26246,7 +26275,7 @@
   },
   "RAZOR_SHARP_SHARK_TOOTH_NECKLACE": {
     "item_id": "RAZOR_SHARP_SHARK_TOOTH_NECKLACE",
-    "name": "Razor-sharp Shark Tooth Necklace",
+    "name": "Shark Tooth Heirloom",
     "count": 1,
     "tier": "LEGENDARY",
     "materials": {
@@ -28295,7 +28324,7 @@
   },
   "SHARP_SHARK_TOOTH_NECKLACE": {
     "item_id": "SHARP_SHARK_TOOTH_NECKLACE",
-    "name": "Sharp Shark Tooth Necklace",
+    "name": "Shark Tooth Relic",
     "count": 1,
     "tier": "EPIC",
     "materials": {
@@ -29813,9 +29842,9 @@
       "type": "collection",
       "collection_id": "SUGAR_CANE",
       "collection_name": "Sugar Cane",
-      "tier": 4,
-      "tier_code": "SUGAR_CANE_4",
-      "amount_required": 1000
+      "tier": 3,
+      "tier_code": "SUGAR_CANE_3",
+      "amount_required": 500
     }
   },
   "SPEEDSTER_CHESTPLATE": {
@@ -29830,9 +29859,9 @@
       "type": "collection",
       "collection_id": "SUGAR_CANE",
       "collection_name": "Sugar Cane",
-      "tier": 4,
-      "tier_code": "SUGAR_CANE_4",
-      "amount_required": 1000
+      "tier": 3,
+      "tier_code": "SUGAR_CANE_3",
+      "amount_required": 500
     }
   },
   "SPEEDSTER_HELMET": {
@@ -29847,9 +29876,9 @@
       "type": "collection",
       "collection_id": "SUGAR_CANE",
       "collection_name": "Sugar Cane",
-      "tier": 4,
-      "tier_code": "SUGAR_CANE_4",
-      "amount_required": 1000
+      "tier": 3,
+      "tier_code": "SUGAR_CANE_3",
+      "amount_required": 500
     }
   },
   "SPEEDSTER_LEGGINGS": {
@@ -29864,9 +29893,9 @@
       "type": "collection",
       "collection_id": "SUGAR_CANE",
       "collection_name": "Sugar Cane",
-      "tier": 4,
-      "tier_code": "SUGAR_CANE_4",
-      "amount_required": 1000
+      "tier": 3,
+      "tier_code": "SUGAR_CANE_3",
+      "amount_required": 500
     }
   },
   "SPEED_ARTIFACT": {
@@ -31300,7 +31329,7 @@
     "item_id": "STARRED_ICE_SPRAY_WAND",
     "name": " Ice Spray Wand",
     "count": 1,
-    "tier": "RARE",
+    "tier": "LEGENDARY",
     "materials": {
       "WINTER_FRAGMENT": 8,
       "ICE_SPRAY_WAND": 1
@@ -33247,7 +33276,7 @@
   },
   "THUNDER_IN_A_BOTTLE_EMPTY": {
     "item_id": "THUNDER_IN_A_BOTTLE_EMPTY",
-    "name": "Empty Thunder Bottle",
+    "name": "Empty Thunder in a Bottle",
     "count": 1,
     "tier": "EPIC",
     "materials": {
@@ -33627,7 +33656,7 @@
   },
   "TWO_IQ_POINT": {
     "item_id": "TWO_IQ_POINT",
-    "name": "2 IQ Points",
+    "name": "Two IQ Points",
     "count": 1,
     "tier": "UNCOMMON",
     "materials": {
