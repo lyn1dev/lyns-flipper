@@ -1,0 +1,63 @@
+name: Watch fusion data
+
+# SkyShards-Parser isn't ours, so its pushes can't trigger us. Instead this checks
+# every 15 minutes whether its fusion-data.json differs from ours, and runs the full
+# sync only when it does. Most runs take a few seconds and do nothing.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: watch-fusion-data
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare upstream fusion-data.json with ours
+        id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The sync saves the upstream file byte for byte, so equal blob SHAs mean equal data.
+          upstream=$(gh api repos/Campionnn/SkyShards-Parser/contents/dist/fusion-data.json --jq .sha)
+          ours=$(gh api "repos/$GITHUB_REPOSITORY/contents/fusion-data.json?ref=main" --jq .sha)
+          echo "upstream $upstream, ours $ours"
+          echo "upstream=$upstream" >> "$GITHUB_OUTPUT"
+          [ "$upstream" != "$ours" ] && echo changed=true >> "$GITHUB_OUTPUT" || true
+
+      # Trigger once per upstream version. Without this, a change held for review
+      # (or a failing sync) would start a new sync every 15 minutes; the 6-hour
+      # schedule in sync-data.yml still retries those.
+      - name: Check whether this version was already handed to the sync
+        if: steps.compare.outputs.changed == 'true'
+        id: seen
+        uses: actions/cache/restore@v4
+        with:
+          path: .fusion-seen
+          key: fusion-seen-${{ steps.compare.outputs.upstream }}
+          lookup-only: true
+
+      - name: Run the sync
+        if: steps.compare.outputs.changed == 'true' && steps.seen.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sync-data.yml --repo "$GITHUB_REPOSITORY" --ref main
+
+      - name: Remember this version
+        if: steps.compare.outputs.changed == 'true' && steps.seen.outputs.cache-hit != 'true'
+        run: echo "${{ steps.compare.outputs.upstream }}" > .fusion-seen
+
+      - name: Save
+        if: steps.compare.outputs.changed == 'true' && steps.seen.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .fusion-seen
+          key: fusion-seen-${{ steps.compare.outputs.upstream }}

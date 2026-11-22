@@ -29,12 +29,16 @@ jobs:
         with:
           node-version: 22
 
-      - name: Test the sync script
-        run: node --test scripts/sync-data.test.mjs
+      - name: Test the sync scripts
+        run: node --test scripts/sync-data.test.mjs scripts/notify-discord.test.mjs
 
       - name: Dry run
         if: github.event_name == 'pull_request'
         run: node scripts/sync-data.mjs --dry-run
+
+      - name: Keep the current fusion data to compare against
+        if: github.event_name != 'pull_request'
+        run: cp fusion-data.json "$RUNNER_TEMP/fusion-before.json"
 
       - name: Build and check data
         id: sync
@@ -47,6 +51,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           STATUS: ${{ steps.sync.outputs.status }}
         run: bash scripts/publish-sync.sh "$STATUS" "$RUNNER_TEMP/sync-report.md"
+
+      - name: Ping Discord about new shard recipes
+        if: steps.sync.outputs.status == 'publish' || steps.sync.outputs.status == 'review'
+        # A Discord outage shouldn't mark the sync as failed.
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_PING_ID: ${{ secrets.DISCORD_PING_ID }}
+          SITE_URL: https://lyn-flipper.vercel.app
+          STATUS: ${{ steps.sync.outputs.status }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo 'No DISCORD_WEBHOOK_URL secret, skipping.'
+            exit 0
+          fi
+          node scripts/notify-discord.mjs "$RUNNER_TEMP/fusion-before.json" fusion-data.json --status "$STATUS"
 
       - name: Report failure
         if: failure() && github.event_name != 'pull_request'
