@@ -3812,6 +3812,17 @@
     },
     "requirement": null
   },
+  "CATACOMBS_GOBBLER": {
+    "item_id": "CATACOMBS_GOBBLER",
+    "name": "Catacombs Gobbler",
+    "count": 1,
+    "tier": "EPIC",
+    "materials": {
+      "WITHER_CATALYST": 14,
+      "DEVOURER": 1
+    },
+    "requirement": null
+  },
   "CATALYST": {
     "item_id": "CATALYST",
     "name": "Catalyst",

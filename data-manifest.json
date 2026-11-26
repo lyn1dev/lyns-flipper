@@ -1,8 +1,8 @@
 {
-  "syncedAt": "2026-11-26T08:09:17.123Z",
-  "gameVersion": "0.27.3.13",
+  "syncedAt": "2026-11-26T21:26:58.432Z",
+  "gameVersion": "0.27.3.14",
   "sources": {
     "fusions": "https://github.com/Campionnn/SkyShards-Parser/tree/9b015fbc1b7acb5557e20d9c0d8210832c878589",
-    "recipes": "https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/tree/6313fc47d2fe8f6410b7f6079832ccadb38abe32"
+    "recipes": "https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO/tree/8c7a619ae0112e2e919090f2b3ae8b5d92641a08"
   }
 }
